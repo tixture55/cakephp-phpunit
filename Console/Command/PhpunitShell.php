@@ -53,6 +53,8 @@ if (!defined('WINDOWS')) {
  */
 class PhpunitShell extends AppShell {
 
+	const DEFAULT_VERSION = '3.7';
+
 	public $officialList = array();
 
 	/**
@@ -140,7 +142,7 @@ class PhpunitShell extends AppShell {
 			$this->versions();
 			return;
 		}
-		$v = $this->_getVersion(isset($this->args[0]) ? $this->args[0] : null);
+		$v = $this->_getVersion(isset($this->args[0]) ? $this->args[0] : self::DEFAULT_VERSION);
 		$packages = $this->_getDependencies($v);
 
 		foreach ($packages as $package) {
@@ -156,7 +158,7 @@ class PhpunitShell extends AppShell {
 	 * @return void
 	 */
 	public function install() {
-		$v = $this->_getVersion(isset($this->args[0]) ? $this->args[0] : '3.7');
+		$v = $this->_getVersion(isset($this->args[0]) ? $this->args[0] : self::DEFAULT_VERSION);
 
 		$this->out(__('Installing PHPUnit %s ...', $v));
 
@@ -627,23 +629,23 @@ class PhpunitShell extends AppShell {
 	protected $files = array(
 			'3.7' => array(
 				array(
-					'url' => 'http://pear.phpunit.de/get/PHPUnit-3.7.19.tgz',
+					'url' => 'http://pear.phpunit.de/get/PHPUnit-3.7.32.tgz',
 					'folder' => 'PHPUnit'
 				),
 				array(
-					'url' => 'http://pear.phpunit.de/get/File_Iterator-1.3.3.tgz',
+					'url' => 'http://pear.phpunit.de/get/File_Iterator-1.3.4.tgz',
 					'folder' => 'File'
 				),
 				array(
-					'url' => 'http://pear.phpunit.de/get/Text_Template-1.1.4.tgz',
+					'url' => 'http://pear.phpunit.de/get/Text_Template-1.2.0.tgz',
 					'folder' => 'Text'
 				),
 				array(
-					'url' => 'http://pear.phpunit.de/get/PHP_CodeCoverage-1.2.9.tgz',
+					'url' => 'http://pear.phpunit.de/get/PHP_CodeCoverage-1.2.16.tgz',
 					'folder' => 'PHP'
 				),
 				array(
-					'url' => 'http://pear.phpunit.de/get/PHP_Timer-1.0.4.tgz',
+					'url' => 'http://pear.phpunit.de/get/PHP_Timer-1.0.5.tgz',
 					'folder' => 'PHP'
 				),
 				array(
@@ -655,7 +657,7 @@ class PhpunitShell extends AppShell {
 					'folder' => 'PHP'
 				),
 				array(
-					'url' => 'http://pear.phpunit.de/get/PHP_Invoker-1.1.2.tgz',
+					'url' => 'http://pear.phpunit.de/get/PHP_Invoker-1.1.3.tgz',
 					'folder' => 'PHP'
 				),
 				array(
@@ -675,7 +677,7 @@ class PhpunitShell extends AppShell {
 					'folder' => 'PHPUnit'
 				),
 				array(
-					'url' => 'http://pear.symfony.com/get/Yaml-2.2.1.tgz',
+					'url' => 'http://pear.symfony.com/get/Yaml-2.3.11.tgz',
 					'folder' => 'Symfony'
 				),
 			),
