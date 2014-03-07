@@ -74,6 +74,9 @@ class PhpunitShell extends AppShell {
 		$this->out(__('Additional info via'));
 		$this->out(__('- packages [version] (pear packages including version numbers)'));
 		$this->out(__('- info [-v] (comparison to current versions on the pear network)'));
+
+		$this->out();
+		$this->out(__('Warning: PHPUnit 4.x uses phpunit.phar and does not integrate into CakePHP 2.x easily. Try to stick to PHPUnit 3.x here.'));
 	}
 
 	/**
@@ -110,14 +113,14 @@ class PhpunitShell extends AppShell {
 	 * @return void
 	 */
 	public function versions() {
-		$c = 0;
+		$defaultFound = false;
 		$versions = $this->_getVersions();
 		foreach ($versions as $key => $version) {
 			$default = '';
-			if ($c === 0) {
+			if (!$defaultFound && substr($key, 0, 1) !== '4') {
 				$default = "\t" . '[' . __('default') . ']';
+				$defaultFound = true;
 			}
-			$c++;
 			$this->out($key . ' : v' . $version . $default);
 		}
 	}
@@ -153,7 +156,7 @@ class PhpunitShell extends AppShell {
 	 * @return void
 	 */
 	public function install() {
-		$v = $this->_getVersion(isset($this->args[0]) ? $this->args[0] : null);
+		$v = $this->_getVersion(isset($this->args[0]) ? $this->args[0] : '3.7');
 
 		$this->out(__('Installing PHPUnit %s ...', $v));
 
@@ -171,7 +174,7 @@ class PhpunitShell extends AppShell {
 
 		foreach ($files as $file) {
 			if (!file_exists($tmpPath . $file['file']) || !empty($this->params['override'])) {
-				# Download the file
+				// Download the file
 				$this->out(__('Downloading <info>%s</info> .. ', $file['name']), 0);
 
 				$data = $Http->get($file['url']);
@@ -179,7 +182,7 @@ class PhpunitShell extends AppShell {
 					throw new RuntimeException('Could not download file. Aborting!');
 				}
 				$Http->reset();
-				# Write it to the tmp folder
+				// Write it to the tmp folder
 				$NewFile = new File($tmpPath . $file['file'], true);
 				if (!$NewFile->write($data->body)) {
 					return $this->error(__('Writing failed'), __('Cannot create tmp files. Aborting.'));
@@ -189,16 +192,34 @@ class PhpunitShell extends AppShell {
 				$this->out(__('Download finished.'));
 			}
 
-			# Extract the file to the folders
+			if (!empty($this->params['interactive'])) {
+				$this->in('Continue to extract?', array('y', 'n'), 'y');
+			}
+
+			// Extract the file to the folders
 			$this->out(__('Extracting ..'), 0);
 			$this->_extract($tmpPath . $file['file']);
 
 			$this->out('Extracting done.');
 
-			# Copy the contents to the target folder
+			if (!empty($this->params['interactive'])) {
+				$this->in('Continue to move to tmp folder?', array('y', 'n'), 'y');
+			}
+
+			// Copy the contents to the target folder
 			$this->out(__('Adding to Vendors ..'), 0);
 
-			if (!$Folder->move(array('to' => $tmpPath . '_target' . DS . $file['folder'] . DS, 'from' => $tmpPath . (str_replace('.tgz', '', $file['file'])) . DS . $file['folder'] . DS))) {
+			if (!empty($this->params['interactive'])) {
+				$this->in('Continue to move to vendor folder?', array('y', 'n'), 'y');
+			}
+
+			$fromPath = $tmpPath . (str_replace('.tgz', '', $file['file'])) . DS;
+			$from = $fromPath . $file['folder'] . DS;
+			// If the folder does not exist use the parent folder (for PHPUnit4.0 necessary)
+			if (!is_dir($from)) {
+				$from = $fromPath;
+			}
+			if (!$Folder->move(array('to' => $tmpPath . '_target' . DS . $file['folder'] . DS, 'from' => $from))) {
 				$this->err($Folder->errors());
 			}
 			$this->out('Adding done.');
@@ -558,10 +579,49 @@ class PhpunitShell extends AppShell {
 		return $result;
 	}
 
+
+	/**
+	 * Gets parser and options.
+	 *
+	 * @return ConsoleOptionParser
+	 */
+	public function getOptionParser() {
+		$subcommandParser = array(
+			'options' => array(
+				'interactive' => array(
+					'short' => 'i',
+					'help' => __d('cake_console', 'Interactive mode.'),
+					'boolean' => true,
+				)
+			)
+		);
+
+		$name = ($this->plugin ? $this->plugin . '.' : '') . $this->name;
+		$parser = new ConsoleOptionParser($name);
+		$parser
+			->description(__d('cake_console', "A shell to help install PHPUnit."))
+			->addSubcommand('main', array(
+				'help' => __d('cake_console', 'Main method as overview.'),
+			))
+			->addSubcommand('install', array(
+				'help' => __d('cake_console', 'Main method to install.'),
+				'parser' => $subcommandParser
+			))
+			->addSubcommand('packages', array(
+				'help' => __d('cake_console', 'List available packages.'),
+			))
+			->addSubcommand('versions', array(
+				'help' => __d('cake_console', 'List available versions.'),
+			))
+			->addSubcommand('info', array(
+				'help' => __d('cake_console', 'Display info.'),
+			));
+		return $parser;
+	}
+
 	protected $versions = array(
 		'3.7' => '3.7.19',
 		'3.6' => '3.6.11',
-		'3.5' => '3.5.15',
 	);
 
 	protected $files = array(
@@ -664,75 +724,7 @@ class PhpunitShell extends AppShell {
 					'url' => 'http://pear.phpunit.de/get/PHPUnit_TicketListener_GitHub-1.0.0.tgz',
 					'folder' => 'PHPUnit'
 				),
-			),
-			'3.5' => array(
-				array(
-					'name' => 'PHPUnit 3.5.15',
-					'file' => 'PHPUnit-3.5.15.tgz',
-					'url' => 'http://pear.phpunit.de/get/PHPUnit-3.5.15.tgz',
-					'folder' => 'PHPUnit'
-				),
-				array(
-					'name' => 'DB Unit 1.0',
-					'file' => 'DbUnit-1.0.0.tgz',
-					'url' => 'http://pear.phpunit.de/get/DbUnit-1.0.0.tgz',
-					'folder' => 'PHPUnit'
-				),
-				array(
-					'name' => 'File Iterator 1.2.3',
-					'file' => 'File_Iterator-1.2.3.tgz',
-					'url' => 'http://pear.phpunit.de/get/File_Iterator-1.2.3.tgz',
-					'folder' => 'File'
-				),
-				array(
-					'name' => 'Text Template 1.0',
-					'file' => 'Text_Template-1.0.0.tgz',
-					'url' => 'http://pear.phpunit.de/get/Text_Template-1.0.0.tgz',
-					'folder' => 'Text'
-				),
-				array(
-					'name' => 'PHP Code Coverage 1.0.2',
-					'file' => 'PHP_CodeCoverage-1.0.2.tgz',
-					'url' => 'http://pear.phpunit.de/get/PHP_CodeCoverage-1.0.2.tgz',
-					'folder' => 'PHP'
-				),
-				array(
-					'name' => 'PHP Timer 1.0',
-					'file' => 'PHP_Timer-1.0.0.tgz',
-					'url' => 'http://pear.phpunit.de/get/PHP_Timer-1.0.0.tgz',
-					'folder' => 'PHP'
-				),
-				array(
-					'name' => 'PHPUnit MockObject 1.0.3',
-					'file' => 'PHPUnit_MockObject-1.0.3.tgz',
-					'url' => 'http://pear.phpunit.de/get/PHPUnit_MockObject-1.0.3.tgz',
-					'folder' => 'PHPUnit'
-				),
-				array(
-					'name' => 'PHPUnit Selenium 1.0.1',
-					'file' => 'PHPUnit_Selenium-1.0.1.tgz',
-					'url' => 'http://pear.phpunit.de/get/PHPUnit_Selenium-1.0.1.tgz',
-					'folder' => 'PHPUnit'
-				),
-				array(
-					'name' => 'PHPUnit TokenStream 1.1.0',
-					'file' => 'PHP_TokenStream-1.1.0.tgz',
-					'url' => 'http://pear.phpunit.de/get/PHP_TokenStream-1.1.0.tgz',
-					'folder' => 'PHP'
-				),
-				array(
-					'name' => 'YAML 1.0.2',
-					'file' => 'YAML-1.0.2.tgz',
-					'url' => 'http://pear.symfony-project.com/get/YAML-1.0.2.tgz',
-					'folder' => 'lib'
-				),
-				array(
-					'name' => 'XML RPC2 1.1.1',
-					'file' => 'XML_RPC2-1.1.1.tgz',
-					'url' => 'http://download.pear.php.net/package/XML_RPC2-1.1.1.tgz',
-					'folder' => 'XML'
-				),
-			),
+			)
 		);
 
 }
