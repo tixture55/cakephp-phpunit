@@ -1,7 +1,7 @@
 ## PHPUnit installer as CakePHP standalone plugin
 
 PHPUnit installer now supports
-3.7 (currently 3.7.32), 3.6 and 3.5
+3.7 (default, currently 3.7.32), 3.6 and maybe 4.0 (careful, that version is not yet fully working with CakePHP).
 
 ## What?
 
