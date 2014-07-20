@@ -1,11 +1,11 @@
 ## PHPUnit installer as CakePHP standalone plugin
 
-PHPUnit installer now supports
-3.7 (default, currently 3.7.32), 3.6 and maybe 4.0 (careful, that version is not yet fully working with CakePHP).
-
 ## What?
 
 This "installer" prepares all the dependencies needed to use PHPUnit with CakePHP 2.x through the use of vendor files.
+
+PHPUnit installer now supports
+3.7 (default, currently 3.7.32), 3.6 and maybe 4.0 (careful, that version is not yet fully working with CakePHP).
 
 ## Why?
 
@@ -14,6 +14,8 @@ Because I'm a fan of self-contained systems. Sure, installing PHPUnit through PE
 ## Requirements
 
 PHP5.3 and CakePHP2.x (>= 2.3)
+
+Note: This is ONLY for non-composer apps. Using composer is highly recommended.
 
 ## Install the Plugin
 
