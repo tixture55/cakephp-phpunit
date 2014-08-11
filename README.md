@@ -15,7 +15,8 @@ Because I'm a fan of self-contained systems. Sure, installing PHPUnit through PE
 
 PHP5.3 and CakePHP2.x (>= 2.3)
 
-Note: This is ONLY for non-composer apps. Using composer is highly recommended.
+Note: This is **ONLY for non-composer apps**. Using composer for CakePHP2+ apps is highly recommended, though.
+Thus modern apps shouldn't need this plugin, at all :)
 
 ## Install the Plugin
 
