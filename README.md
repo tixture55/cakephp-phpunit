@@ -1,5 +1,9 @@
 ## PHPUnit installer as CakePHP standalone plugin
 
+## WARNING
+**This plugin is deprecated as of now since the PEAR channel for it has been shut down.**
+Please composer your app and use that to include PHPUnit or simply use the phar file (Support for this has been added in recent 2.x versions, as well).
+
 ## What?
 
 This "installer" prepares all the dependencies needed to use PHPUnit with CakePHP 2.x through the use of vendor files.
